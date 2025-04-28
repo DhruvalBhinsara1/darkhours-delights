@@ -1,18 +1,38 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-import { getAuth, GoogleAuthProvider } from "firebase/auth"; // Add Authentication imports
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
-// Your web app's Firebase configuration
+// Firebase configuration using environment variables
 const firebaseConfig = {
-    apiKey: "AIzaSyBOGD8Q_qK12LT-BQE934HYUpgvJEx82ok",
-    authDomain: "darkhourdelights.firebaseapp.com",
-    projectId: "darkhourdelights",
-    storageBucket: "darkhourdelights.firebasestorage.app",
-    messagingSenderId: "295360071441",
-    appId: "1:295360071441:web:401f24d2fcdb9553532eb0",
-    measurementId: "G-CYP0N09NTV",
+    apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+    authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+    projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+    storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.REACT_APP_FIREBASE_APP_ID,
+    measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
 };
+
+// Validate that all required environment variables are present
+const requiredEnvVars = [
+    "REACT_APP_FIREBASE_API_KEY",
+    "REACT_APP_FIREBASE_AUTH_DOMAIN",
+    "REACT_APP_FIREBASE_PROJECT_ID",
+    "REACT_APP_FIREBASE_STORAGE_BUCKET",
+    "REACT_APP_FIREBASE_MESSAGING_SENDER_ID",
+    "REACT_APP_FIREBASE_APP_ID",
+    "REACT_APP_FIREBASE_MEASUREMENT_ID",
+];
+
+const missingEnvVars = requiredEnvVars.filter(
+    (varName) => !process.env[varName]
+);
+if (missingEnvVars.length > 0) {
+    throw new Error(
+        `Missing required environment variables: ${missingEnvVars.join(", ")}`
+    );
+}
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
