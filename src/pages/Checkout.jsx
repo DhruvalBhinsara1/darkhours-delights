@@ -57,12 +57,7 @@ function Checkout() {
 
         // Validate floor (must be a number between 0 and 4)
         const floorNum = parseInt(deliveryInfo.floor, 10);
-        if (
-            !deliveryInfo.floor ||
-            isNaN(floorNum) ||
-            floorNum < 0 ||
-            floorNum > 4
-        ) {
+        if (!deliveryInfo.floor || isNaN(floorNum) || floorNum < 0 || floorNum > 4) {
             return "Floor must be a number between 0 (Ground Floor) and 4.";
         }
 
@@ -82,13 +77,18 @@ function Checkout() {
             return;
         }
 
+        const totalPrice = cart.reduce((total, item) => total + item.price * item.quantity, 0);
+        if (totalPrice < 30) {
+            setFormError("Minimum order value is ₹30. Please add more items to your cart.");
+            return;
+        }
+
         setIsProcessing(true);
         setFormError(null);
 
         try {
             const orderId = `ORD${Date.now()}`;
             const timestamp = Date.now();
-            const totalPrice = cart.reduce((total, item) => total + item.price * item.quantity, 0);
 
             const order = {
                 orderId,
@@ -100,8 +100,8 @@ function Checkout() {
                 })),
                 phone: deliveryInfo.phone,
                 room: deliveryInfo.room,
-                block: deliveryInfo.block.toUpperCase(), // Store block as uppercase for consistency
-                floor: parseInt(deliveryInfo.floor, 10), // Store floor as a number
+                block: deliveryInfo.block.toUpperCase(),
+                floor: parseInt(deliveryInfo.floor, 10),
             };
 
             const storedOrders = localStorage.getItem(`orders_${currentUser.uid}`);
