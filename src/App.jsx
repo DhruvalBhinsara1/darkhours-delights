@@ -10,6 +10,7 @@ import Suggestions from "./pages/Suggestions";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
+import { ShopStatusProvider } from "./context/ShopStatusContext";
 
 function ProtectedRoute({ children }) {
   const { currentUser, loading } = useAuth();
@@ -37,47 +38,49 @@ function ProtectedRoute({ children }) {
 function App() {
   return (
     <AuthProvider>
-      <CartProvider>
-        <BrowserRouter>
-          <div className="min-h-screen flex flex-col">
-            <Navbar />
-            <main className="flex-grow">
-              <ErrorBoundary>
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/cart" element={<Cart />} />
-                  <Route
-                    path="/checkout"
-                    element={
-                      <ProtectedRoute>
-                        <Checkout />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/order-confirmation"
-                    element={
-                      <ProtectedRoute>
-                        <OrderConfirmation />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/order-history"
-                    element={
-                      <ProtectedRoute>
-                        <OrderHistory />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route path="/suggestions" element={<Suggestions />} />
-                </Routes>
-              </ErrorBoundary>
-            </main>
-            <Footer />
-          </div>
-        </BrowserRouter>
-      </CartProvider>
+      <ShopStatusProvider>
+        <CartProvider>
+          <BrowserRouter>
+            <div className="min-h-screen flex flex-col">
+              <Navbar />
+              <main className="flex-grow">
+                <ErrorBoundary>
+                  <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/cart" element={<Cart />} />
+                    <Route
+                      path="/checkout"
+                      element={
+                        <ProtectedRoute>
+                          <Checkout />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/order-confirmation"
+                      element={
+                        <ProtectedRoute>
+                          <OrderConfirmation />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/order-history"
+                      element={
+                        <ProtectedRoute>
+                          <OrderHistory />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route path="/suggestions" element={<Suggestions />} />
+                  </Routes>
+                </ErrorBoundary>
+              </main>
+              <Footer />
+            </div>
+          </BrowserRouter>
+        </CartProvider>
+      </ShopStatusProvider>
     </AuthProvider>
   );
 }

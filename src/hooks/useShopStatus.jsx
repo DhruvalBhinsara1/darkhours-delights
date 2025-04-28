@@ -7,7 +7,7 @@ function useShopStatus() {
     useEffect(() => {
         // Here you could check actual shop open/close logic
         const hours = new Date().getHours();
-        setShopOpen(hours >= 9 && hours <= 22); // example: shop open from 9AM to 10PM
+        setShopOpen(hours >= 21 && hours <= 2); // example: shop open from 9AM to 10PM
     }, []);
 
     return shopOpen;

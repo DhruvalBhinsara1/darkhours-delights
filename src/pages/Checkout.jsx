@@ -2,9 +2,10 @@ import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useShopStatus } from "../context/ShopStatusContext";
 
 function Checkout() {
-    const { currentUser, loading } = useAuth();
+    const { currentUser, loading: authLoading } = useAuth();
     const { cart, clearCart } = useCart();
     const navigate = useNavigate();
     const [isProcessing, setIsProcessing] = useState(false);
@@ -15,13 +16,19 @@ function Checkout() {
         floor: "",
     });
     const [formError, setFormError] = useState(null);
+    const { shopStatus, loading: statusLoading } = useShopStatus();
 
     useEffect(() => {
-        if (!loading && !currentUser) {
-            alert("Please log in to continue with checkout.");
-            navigate("/");
+        if (!authLoading && !statusLoading && (!currentUser || shopStatus === "closed")) {
+            if (!currentUser) {
+                alert("Please log in to continue with checkout.");
+                navigate("/");
+            } else if (shopStatus === "closed") {
+                alert("Sorry, the shop is currently closed. Please try again later.");
+                navigate("/");
+            }
         }
-    }, [loading, currentUser, navigate]);
+    }, [authLoading, statusLoading, currentUser, shopStatus, navigate]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -32,24 +39,39 @@ function Checkout() {
     };
 
     const validateForm = () => {
+        // Validate phone number (10 digits)
         if (!deliveryInfo.phone || !/^\d{10}$/.test(deliveryInfo.phone)) {
             return "Please enter a valid 10-digit phone number.";
         }
+
+        // Validate room number (non-empty)
         if (!deliveryInfo.room) {
             return "Please enter your room number.";
         }
-        if (!deliveryInfo.block) {
-            return "Please enter your block.";
+
+        // Validate block (only A, B, or C, case-insensitive)
+        const blockUpper = deliveryInfo.block.toUpperCase();
+        if (!["A", "B", "C"].includes(blockUpper)) {
+            return "Block must be A, B, or C.";
         }
-        if (!deliveryInfo.floor) {
-            return "Please enter your floor number.";
+
+        // Validate floor (must be a number between 0 and 4)
+        const floorNum = parseInt(deliveryInfo.floor, 10);
+        if (
+            !deliveryInfo.floor ||
+            isNaN(floorNum) ||
+            floorNum < 0 ||
+            floorNum > 4
+        ) {
+            return "Floor must be a number between 0 (Ground Floor) and 4.";
         }
+
         return null;
     };
 
     const handleCheckout = async () => {
-        if (!currentUser) {
-            alert("Please log in to complete your order.");
+        if (!currentUser || shopStatus === "closed") {
+            alert("Cannot process order: Shop is closed or you need to log in.");
             navigate("/");
             return;
         }
@@ -78,8 +100,8 @@ function Checkout() {
                 })),
                 phone: deliveryInfo.phone,
                 room: deliveryInfo.room,
-                block: deliveryInfo.block,
-                floor: deliveryInfo.floor,
+                block: deliveryInfo.block.toUpperCase(), // Store block as uppercase for consistency
+                floor: parseInt(deliveryInfo.floor, 10), // Store floor as a number
             };
 
             const storedOrders = localStorage.getItem(`orders_${currentUser.uid}`);
@@ -99,7 +121,7 @@ function Checkout() {
         }
     };
 
-    if (loading) {
+    if (authLoading || statusLoading) {
         return (
             <div className="bg-gray-900 text-gray-200 min-h-screen flex items-center justify-center">
                 Loading...
@@ -107,17 +129,23 @@ function Checkout() {
         );
     }
 
-    if (!currentUser) {
+    if (!currentUser || shopStatus === "closed") {
         return (
             <div className="bg-gray-900 text-gray-200 min-h-screen flex items-center justify-center">
                 <div className="frosted-glass p-6 rounded-lg shadow-md text-center">
-                    <h2 className="text-2xl font-bold mb-4 text-white">Please Log In</h2>
-                    <p className="mb-4">You need to be logged in to checkout.</p>
+                    <h2 className="text-2xl font-bold mb-4 text-white">
+                        {shopStatus === "closed" ? "Shop Closed" : "Please Log In"}
+                    </h2>
+                    <p className="mb-4 text-gray-400">
+                        {shopStatus === "closed"
+                            ? "Sorry, the shop is currently closed. Please try again later."
+                            : "You need to be logged in to checkout."}
+                    </p>
                     <Link
-                        to="/"
+                        to={shopStatus === "closed" ? "/" : "/"}
                         className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors duration-200"
                     >
-                        Go to Login
+                        {shopStatus === "closed" ? "Go to Home" : "Go to Login"}
                     </Link>
                 </div>
             </div>
@@ -175,7 +203,7 @@ function Checkout() {
                                 value={deliveryInfo.room}
                                 onChange={handleInputChange}
                                 className="w-full p-2 rounded bg-gray-800 text-gray-200 border border-gray-700 focus:outline-none focus:border-blue-500"
-                                placeholder="Enter your room number"
+                                placeholder="Enter your room number (e.g., 101)"
                             />
                         </div>
                         <div>
@@ -189,7 +217,7 @@ function Checkout() {
                                 value={deliveryInfo.block}
                                 onChange={handleInputChange}
                                 className="w-full p-2 rounded bg-gray-800 text-gray-200 border border-gray-700 focus:outline-none focus:border-blue-500"
-                                placeholder="Enter your block (e.g., A)"
+                                placeholder="Enter your block (A, B, or C)"
                             />
                         </div>
                         <div>
@@ -203,7 +231,7 @@ function Checkout() {
                                 value={deliveryInfo.floor}
                                 onChange={handleInputChange}
                                 className="w-full p-2 rounded bg-gray-800 text-gray-200 border border-gray-700 focus:outline-none focus:border-blue-500"
-                                placeholder="Enter your floor number (e.g., 1)"
+                                placeholder="Enter your floor (0 for Ground, 1-4)"
                             />
                         </div>
                     </form>
@@ -223,12 +251,23 @@ function Checkout() {
                     </div>
                     <button
                         onClick={handleCheckout}
-                        disabled={isProcessing}
-                        className={`mt-4 w-full px-4 py-2 bg-blue-500 text-white rounded transition-colors duration-200 ${isProcessing ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-600"
+                        disabled={isProcessing || shopStatus === "closed"}
+                        className={`mt-4 w-full px-4 py-2 bg-blue-500 text-white rounded transition-colors duration-200 ${isProcessing || shopStatus === "closed"
+                                ? "opacity-50 cursor-not-allowed"
+                                : "hover:bg-blue-600"
                             }`}
                     >
-                        {isProcessing ? "Processing..." : "Confirm Order"}
+                        {shopStatus === "closed"
+                            ? "Shop Closed"
+                            : isProcessing
+                                ? "Processing..."
+                                : "Confirm Order"}
                     </button>
+                    {shopStatus === "closed" && (
+                        <p className="text-red-400 text-sm mt-2 text-center">
+                            The shop is currently closed. Please try again later.
+                        </p>
+                    )}
                 </div>
             </div>
         </div>
