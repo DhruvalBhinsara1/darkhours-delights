@@ -3,35 +3,44 @@ import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
-// Firebase configuration using environment variables
+// Firebase configuration using Vite environment variables
 const firebaseConfig = {
-    apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
-    authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
-    projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
-    storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
-    appId: process.env.REACT_APP_FIREBASE_APP_ID,
-    measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "",
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "",
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "",
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "",
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "",
+    appId: import.meta.env.VITE_FIREBASE_APP_ID || "",
+    measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "",
 };
 
 // Validate that all required environment variables are present
 const requiredEnvVars = [
-    "REACT_APP_FIREBASE_API_KEY",
-    "REACT_APP_FIREBASE_AUTH_DOMAIN",
-    "REACT_APP_FIREBASE_PROJECT_ID",
-    "REACT_APP_FIREBASE_STORAGE_BUCKET",
-    "REACT_APP_FIREBASE_MESSAGING_SENDER_ID",
-    "REACT_APP_FIREBASE_APP_ID",
-    "REACT_APP_FIREBASE_MEASUREMENT_ID",
+    "VITE_FIREBASE_API_KEY",
+    "VITE_FIREBASE_AUTH_DOMAIN",
+    "VITE_FIREBASE_PROJECT_ID",
+    "VITE_FIREBASE_STORAGE_BUCKET",
+    "VITE_FIREBASE_MESSAGING_SENDER_ID",
+    "VITE_FIREBASE_APP_ID",
+    "VITE_FIREBASE_MEASUREMENT_ID",
 ];
 
 const missingEnvVars = requiredEnvVars.filter(
-    (varName) => !process.env[varName]
+    (varName) => !import.meta.env[varName]
 );
 if (missingEnvVars.length > 0) {
-    throw new Error(
+    console.error(
         `Missing required environment variables: ${missingEnvVars.join(", ")}`
     );
+    if (import.meta.env.MODE === "development") {
+        console.warn(
+            "Using empty config as fallback in development. Please set environment variables in .env."
+        );
+    } else {
+        throw new Error(
+            `Missing required environment variables: ${missingEnvVars.join(", ")}`
+        );
+    }
 }
 
 // Initialize Firebase
