@@ -15,7 +15,7 @@ function ItemCard({ item, addToCart }) {
 
     const handleImageError = (e) => {
         console.error(`Failed to load image for ${item.title}:`, e);
-        setImgSrc("https://via.placeholder.com/150?text=Image+Not+Found");
+        setImgSrc("https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcThz_oq33cJxn9qdyJzD4G0UskgEsmIPQV6jQULlhTaT8c0e5Ps4pHig5x9Jwa76f_O9HQvhGLMhXq8QaVe3GUIZzOyqLpN6RnBwv27FYo");
         setImgLoading(false);
     };
 
@@ -26,8 +26,8 @@ function ItemCard({ item, addToCart }) {
     return (
         <div
             className={`frosted-glass p-3 rounded-lg shadow-lg transition-transform duration-300 transform ${isDisabled
-                    ? "opacity-50"
-                    : "hover:scale-105 hover:shadow-xl hover:bg-opacity-80"
+                ? "opacity-50"
+                : "hover:scale-105 hover:shadow-xl hover:bg-opacity-80"
                 } bg-gray-800 bg-opacity-70 backdrop-blur-md border border-gray-700`}
         >
             <div className="relative w-full h-36 flex items-center justify-center">
@@ -78,8 +78,8 @@ function ItemCard({ item, addToCart }) {
                     <button
                         onClick={() => setQuantity(quantity > 1 ? quantity - 1 : 1)}
                         className={`px-2 py-1 rounded-lg text-white text-sm transition-colors duration-200 ${isDisabled || quantity <= 1
-                                ? "bg-gray-600 cursor-not-allowed"
-                                : "bg-gray-700 hover:bg-gray-600"
+                            ? "bg-gray-600 cursor-not-allowed"
+                            : "bg-gray-700 hover:bg-gray-600"
                             }`}
                         disabled={isDisabled || quantity <= 1}
                     >
@@ -91,8 +91,8 @@ function ItemCard({ item, addToCart }) {
                             setQuantity(quantity < item.stock ? quantity + 1 : quantity)
                         }
                         className={`px-2 py-1 rounded-lg text-white text-sm transition-colors duration-200 ${isDisabled || quantity >= item.stock
-                                ? "bg-gray-600 cursor-not-allowed"
-                                : "bg-gray-700 hover:bg-gray-600"
+                            ? "bg-gray-600 cursor-not-allowed"
+                            : "bg-gray-700 hover:bg-gray-600"
                             }`}
                         disabled={isDisabled || quantity >= item.stock}
                     >
@@ -102,8 +102,8 @@ function ItemCard({ item, addToCart }) {
                 <button
                     onClick={handleAdd}
                     className={`px-3 py-1 rounded-lg text-white font-medium text-sm transition-all duration-300 transform ${isDisabled
-                            ? "bg-gray-500 cursor-not-allowed"
-                            : "bg-green-600 hover:bg-green-700 hover:scale-105 hover:shadow-lg"
+                        ? "bg-gray-500 cursor-not-allowed"
+                        : "bg-green-600 hover:bg-green-700 hover:scale-105 hover:shadow-lg"
                         }`}
                     disabled={isDisabled}
                 >

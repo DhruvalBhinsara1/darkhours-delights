@@ -16,16 +16,15 @@ function Home() {
             { _id: "2", name: "Chips" },
             { _id: "3", name: "Beverages" },
             { _id: "4", name: "Chocolates" },
-            { _id: "5", name: "Snacks" },
-            { _id: "6", name: "Candies" },
+            { _id: "5", name: "Candies" },
         ]);
         setItems([
             {
                 _id: "101",
-                title: "Lays Classic",
+                title: "Lays Classic Salted",
                 price: 20,
                 stock: 15,
-                image: "https://www.lays.com/sites/lays.com/files/2022-10/lays-classic.png",
+                image: "https://m.media-amazon.com/images/I/7188t60sWoL.jpg",
                 category: "2",
             },
             {
@@ -33,7 +32,7 @@ function Home() {
                 title: "Lays Masala",
                 price: 20,
                 stock: 0,
-                image: "https://www.lays.com/sites/lays.com/files/2022-10/lays-masala.png",
+                image: "https://www.bigbasket.com/media/uploads/p/l/102750_17-lays-potato-chips-indias-magic-masala.jpg",
                 category: "2",
             },
             {
@@ -42,15 +41,15 @@ function Home() {
                 price: 50,
                 stock: 8,
                 image:
-                    "https://www.pringles.com/content/dam/pringles/us/en/images/products/original.png",
+                    "https://m.media-amazon.com/images/I/71-7xPT-n0L.jpg",
                 category: "2",
             },
             {
                 _id: "104",
-                title: "Kurkure",
+                title: "Kurkure Masala Munch",
                 price: 15,
                 stock: 20,
-                image: "https://www.kurkure.com/images/products/masala-munch.png",
+                image: "https://rukminim3.flixcart.com/image/850/1000/l5iid8w0/snack-savourie/t/c/i/-original-imagg65fez3mdsf5.jpeg?q=20",
                 category: "2",
             },
             {
@@ -125,53 +124,29 @@ function Home() {
             },
             {
                 _id: "113",
-                title: "Bhel Puri",
-                price: 30,
-                stock: 10,
-                image: "https://via.placeholder.com/150?text=Bhel+Puri",
-                category: "5",
-            },
-            {
-                _id: "114",
-                title: "Samosa",
-                price: 25,
-                stock: 0,
-                image: "https://via.placeholder.com/150?text=Samosa",
-                category: "5",
-            },
-            {
-                _id: "115",
-                title: "Pani Puri",
-                price: 20,
-                stock: 12,
-                image: "https://via.placeholder.com/150?text=Pani+Puri",
-                category: "5",
-            },
-            {
-                _id: "116",
                 title: "Skittles",
                 price: 15,
                 stock: 0,
                 image:
                     "https://www.skittles.com/sites/g/files/flyfud143/files/2022-03/skittles-original.png",
-                category: "6",
+                category: "5",
             },
             {
-                _id: "117",
+                _id: "114",
                 title: "M&M's",
                 price: 15,
                 stock: 15,
                 image:
                     "https://www.mms.com/sites/g/files/flyfud143/files/2022-03/mms-milk-chocolate.png",
-                category: "6",
+                category: "5",
             },
             {
-                _id: "118",
+                _id: "115",
                 title: "Jelly Beans",
                 price: 10,
                 stock: 25,
                 image: "https://via.placeholder.com/150?text=Jelly+Beans",
-                category: "6",
+                category: "5",
             },
         ]);
         setLoading(false);
