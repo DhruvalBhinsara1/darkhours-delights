@@ -11,7 +11,7 @@ function Home() {
     const { addToCart } = useCart();
 
     useEffect(() => {
-        // Mock data with a larger variety of items
+        // Mock data
         setCategories([
             { _id: "1", name: "All" },
             { _id: "2", name: "Chips" },
@@ -21,8 +21,8 @@ function Home() {
             { _id: "6", name: "Candies" },
         ]);
         setItems([
-            { _id: "101", title: "Lays Classic", price: 20, stock: 15, image: "lays-classic.jpg", category: "2" },
-            { _id: "102", title: "Lays Masala", price: 20, stock: 12, image: "lays-masala.jpg", category: "2" },
+            { _id: "101", title: "Lays Classic", price: 20, stock: 15, image: "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcTJZ39dEZkjpgIxLb35VbJOoqlToh3gH6HQRTJF12wxFfs6RMNA3vTWYEOOsMJhPcElZxS2Ru5VyUXXpknoZVhCOLVr3KJRZJ-19I2C3pZW_Kxuan1GbWzpuQ", category: "2" },
+            { _id: "102", title: "Lays Masala", price: 20, stock: 12, image: "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcROvs519ZgZuTRjuqJRppnrI3z6Kzq1A0qRUyahpXaem9gmEOl1NfwGY4AS2oXNH1qoIbHYgL3ApPQ0En0ysiThUIXNvv9qt5Scdqmpv2AlzIvV7i-owbBg", category: "2" },
             { _id: "103", title: "Pringles Original", price: 50, stock: 8, image: "pringles-original.jpg", category: "2" },
             { _id: "104", title: "Kurkure", price: 15, stock: 20, image: "kurkure.jpg", category: "2" },
             { _id: "105", title: "Coke 250ml", price: 25, stock: 10, image: "coke-250ml.jpg", category: "3" },
@@ -65,22 +65,21 @@ function Home() {
                         key={category._id}
                         onClick={() => setSelectedCategory(category._id)}
                         className={`px-4 py-2 rounded ${selectedCategory === category._id
-                                ? "bg-blue-600 text-white"
-                                : "bg-gray-200 hover:bg-gray-300"
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-200 hover:bg-gray-300"
                             }`}
                     >
                         {category.name}
                     </button>
                 ))}
             </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {items.length === 0 ? (
                     <p>No items available.</p>
                 ) : (
                     items
-                        .filter((item) =>
-                            selectedCategory === "1" || item.category === selectedCategory
-                        )
+                        .filter((item) => selectedCategory === "1" || item.category === selectedCategory)
                         .map((item) => (
                             <ItemCard key={item._id} item={item} addToCart={handleAddToCart} />
                         ))

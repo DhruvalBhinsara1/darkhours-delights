@@ -1,47 +1,56 @@
-import { useState } from "react"; // Add this import
+import { useState } from "react";
 
 function ItemCard({ item, addToCart }) {
     const [quantity, setQuantity] = useState(1);
 
-    const handleIncrement = () => setQuantity(quantity + 1);
-    const handleDecrement = () => setQuantity(quantity > 1 ? quantity - 1 : 1);
+    const increaseQuantity = () => {
+        setQuantity(prev => prev + 1);
+    };
+
+    const decreaseQuantity = () => {
+        setQuantity(prev => (prev > 1 ? prev - 1 : 1));
+    };
+
+    const handleAdd = () => {
+        addToCart(item, quantity);
+    };
 
     return (
-        <div className="border rounded-lg p-4 shadow-md bg-white">
-            <img
-                src={item.image || "placeholder.jpg"}
-                alt={item.title}
-                className="w-full h-40 object-cover rounded mb-2"
-            />
-            <h3 className="text-lg font-semibold">{item.title}</h3>
-            <p className="text-gray-600 mb-2">₹{item.price}</p>
-            {item.stock > 0 ? (
-                <div className="flex flex-col sm:flex-row items-center gap-2">
-                    <div className="flex items-center">
-                        <button
-                            onClick={handleDecrement}
-                            className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
-                        >
-                            -
-                        </button>
-                        <span className="mx-2">{quantity}</span>
-                        <button
-                            onClick={handleIncrement}
-                            className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
-                        >
-                            +
-                        </button>
-                    </div>
+        <div className="bg-gray-100 rounded-lg shadow-md overflow-hidden flex flex-col">
+            <div className="bg-white p-4 flex justify-center items-center">
+                <img
+                    src={item.image}
+                    alt={item.title}
+                    className="w-full h-48 object-contain"
+                />
+            </div>
+            <div className="p-4 flex flex-col flex-grow justify-between">
+                <div>
+                    <h2 className="text-lg font-semibold mb-2">{item.title}</h2>
+                    <p className="text-gray-700 mb-2">₹{item.price}</p>
+                </div>
+                <div className="flex items-center mt-2 gap-2">
                     <button
-                        onClick={() => addToCart(item, quantity)}
-                        className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                        onClick={decreaseQuantity}
+                        className="bg-gray-300 hover:bg-gray-400 text-black px-2 py-1 rounded"
                     >
-                        Add to Bag
+                        -
+                    </button>
+                    <span className="px-4">{quantity}</span>
+                    <button
+                        onClick={increaseQuantity}
+                        className="bg-gray-300 hover:bg-gray-400 text-black px-2 py-1 rounded"
+                    >
+                        +
+                    </button>
+                    <button
+                        onClick={handleAdd}
+                        className="ml-auto bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded"
+                    >
+                        Add
                     </button>
                 </div>
-            ) : (
-                <p className="text-red-500">Out of Stock</p>
-            )}
+            </div>
         </div>
     );
 }
