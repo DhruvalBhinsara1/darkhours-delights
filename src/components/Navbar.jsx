@@ -2,16 +2,19 @@ import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Link } from "react-router-dom";
 import { FaShoppingCart, FaLightbulb, FaGoogle, FaSignOutAlt, FaHistory, FaHome, FaStore } from "react-icons/fa";
-import useShopStatus from "../hooks/useShopStatus";
+import { useShopStatus } from "../context/ShopStatusContext"; // Updated import
 
 function Navbar() {
-    const { currentUser, login, logout } = useAuth(); // Renamed 'user' to 'currentUser' for consistency with AuthContext
+    const { currentUser, login, logout } = useAuth();
     const [menuOpen, setMenuOpen] = useState(false);
-    const shopOpen = useShopStatus();
+    const { shopStatus, loading } = useShopStatus(); // Use context hook
 
     const toggleMenu = () => {
         setMenuOpen((prev) => !prev);
     };
+
+    // Determine if shop is open based on shopStatus
+    const isShopOpen = shopStatus === "open";
 
     return (
         <nav className="bg-gray-800 text-gray-300 p-4 shadow-md frosted-glass sticky top-0 z-50">
@@ -33,33 +36,53 @@ function Navbar() {
 
                 {/* Desktop Links */}
                 <div className="hidden md:flex items-center space-x-6">
-                    <ShopLinks shopOpen={shopOpen} currentUser={currentUser} login={login} logout={logout} />
+                    <ShopLinks
+                        shopOpen={isShopOpen}
+                        loading={loading}
+                        currentUser={currentUser}
+                        login={login}
+                        logout={logout}
+                    />
                 </div>
             </div>
 
             {/* Mobile Menu with Transition */}
             <div
-                className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${menuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}`}
+                className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${menuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+                    }`}
             >
                 <div className="flex flex-col items-start bg-gray-800 p-4 space-y-4 frosted-glass">
-                    <ShopLinks shopOpen={shopOpen} currentUser={currentUser} login={login} logout={logout} />
+                    <ShopLinks
+                        shopOpen={isShopOpen}
+                        loading={loading}
+                        currentUser={currentUser}
+                        login={login}
+                        logout={logout}
+                    />
                 </div>
             </div>
         </nav>
     );
 }
 
-function ShopLinks({ shopOpen, currentUser, login, logout }) {
+function ShopLinks({ shopOpen, loading, currentUser, login, logout }) {
     return (
         <>
             {/* Shop Status */}
             <div className="flex items-center space-x-2">
                 <FaStore className="text-xl" />
-                <span
-                    className={`text-xs font-semibold px-2 py-1 rounded-full ${shopOpen ? "bg-green-500 animate-pulse" : "bg-red-500"}`}
-                >
-                    {shopOpen ? "Open" : "Closed"}
-                </span>
+                {loading ? (
+                    <span className="text-xs font-semibold px-2 py-1 rounded-full bg-gray-500">
+                        Loading...
+                    </span>
+                ) : (
+                    <span
+                        className={`text-xs font-semibold px-2 py-1 rounded-full ${shopOpen ? "bg-green-500 animate-pulse" : "bg-red-500"
+                            }`}
+                    >
+                        {shopOpen ? "Open" : "Closed"}
+                    </span>
+                )}
             </div>
 
             {/* Links */}
