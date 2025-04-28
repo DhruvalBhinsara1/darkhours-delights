@@ -1,0 +1,44 @@
+/* Frosted glass effect */
+.frosted-glass {
+    background: rgba(255, 255, 255, 0.15);
+    /* Slightly lighter for vibrancy */
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    /* For Safari */
+    background: rgba(31, 41, 55, 0.85);
+    /* Fallback */
+}
+
+/* Ensure dark theme for inputs and selects */
+input,
+select,
+textarea {
+    background: rgba(255, 255, 255, 0.15);
+    color: #d1d5db;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+/* Placeholder color for dark theme */
+input::placeholder,
+textarea::placeholder {
+    color: #9ca3af;
+}
+
+/* Focus state for inputs */
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+}
+
+/* Hover effect for the "Add to Bag" button */
+button {
+    transition: all 0.3s ease;
+}
+
+button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}

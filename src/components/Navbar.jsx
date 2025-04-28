@@ -5,77 +5,114 @@ import { FaShoppingCart, FaLightbulb, FaGoogle, FaSignOutAlt, FaHistory, FaHome,
 import useShopStatus from "../hooks/useShopStatus";
 
 function Navbar() {
-    const { user, login, logout } = useAuth();
+    const { currentUser, login, logout } = useAuth(); // Renamed 'user' to 'currentUser' for consistency with AuthContext
     const [menuOpen, setMenuOpen] = useState(false);
     const shopOpen = useShopStatus();
 
+    const toggleMenu = () => {
+        setMenuOpen((prev) => !prev);
+    };
+
     return (
-        <nav className="bg-gray-800 text-white p-4 shadow-md">
+        <nav className="bg-gray-800 text-gray-300 p-4 shadow-md frosted-glass sticky top-0 z-50">
             <div className="container mx-auto flex justify-between items-center relative">
                 {/* Logo */}
-                <Link to="/" className="text-2xl font-bold">
+                <Link to="/" className="text-2xl font-bold text-gray-300">
                     DarkHours Delights
                 </Link>
 
-                {/* Hamburger */}
-                <button onClick={() => setMenuOpen(!menuOpen)} className="text-2xl md:hidden">
+                {/* Hamburger for Mobile */}
+                <button
+                    onClick={toggleMenu}
+                    className="text-2xl md:hidden focus:outline-none focus:ring-2 focus:ring-blue-600 rounded"
+                    aria-label={menuOpen ? "Close menu" : "Open menu"}
+                    aria-expanded={menuOpen}
+                >
                     {menuOpen ? "✖" : "☰"}
                 </button>
 
                 {/* Desktop Links */}
                 <div className="hidden md:flex items-center space-x-6">
-                    <ShopLinks shopOpen={shopOpen} user={user} login={login} logout={logout} />
+                    <ShopLinks shopOpen={shopOpen} currentUser={currentUser} login={login} logout={logout} />
                 </div>
             </div>
 
-            {/* Mobile Menu */}
-            {menuOpen && (
-                <div className="flex flex-col items-start bg-gray-800 p-4 space-y-4 md:hidden">
-                    <ShopLinks shopOpen={shopOpen} user={user} login={login} logout={logout} />
+            {/* Mobile Menu with Transition */}
+            <div
+                className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${menuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}`}
+            >
+                <div className="flex flex-col items-start bg-gray-800 p-4 space-y-4 frosted-glass">
+                    <ShopLinks shopOpen={shopOpen} currentUser={currentUser} login={login} logout={logout} />
                 </div>
-            )}
+            </div>
         </nav>
     );
 }
 
-function ShopLinks({ shopOpen, user, login, logout }) {
+function ShopLinks({ shopOpen, currentUser, login, logout }) {
     return (
         <>
             {/* Shop Status */}
             <div className="flex items-center space-x-2">
                 <FaStore className="text-xl" />
-                <span className={`text-xs font-semibold px-2 py-1 rounded-full ${shopOpen ? "bg-green-500 animate-pulse" : "bg-red-500"}`}>
+                <span
+                    className={`text-xs font-semibold px-2 py-1 rounded-full ${shopOpen ? "bg-green-500 animate-pulse" : "bg-red-500"}`}
+                >
                     {shopOpen ? "Open" : "Closed"}
                 </span>
             </div>
 
             {/* Links */}
-            <Link to="/" className="flex items-center hover:text-gray-300">
-                <FaHome className="text-xl mr-1" />
+            <Link
+                to="/"
+                className="flex items-center space-x-1 focus:outline-none focus:ring-2 focus:ring-blue-600 rounded px-2 py-1"
+                aria-label="Home"
+            >
+                <FaHome className="text-xl" />
                 <span>Home</span>
             </Link>
-            <Link to="/cart" className="flex items-center hover:text-gray-300">
-                <FaShoppingCart className="text-xl mr-1" />
+            <Link
+                to="/cart"
+                className="flex items-center space-x-1 focus:outline-none focus:ring-2 focus:ring-blue-600 rounded px-2 py-1"
+                aria-label="Cart"
+            >
+                <FaShoppingCart className="text-xl" />
                 <span>Cart</span>
             </Link>
-            <Link to="/order-history" className="flex items-center hover:text-gray-300">
-                <FaHistory className="text-xl mr-1" />
+            <Link
+                to="/order-history"
+                className="flex items-center space-x-1 focus:outline-none focus:ring-2 focus:ring-blue-600 rounded px-2 py-1"
+                aria-label="Order History"
+            >
+                <FaHistory className="text-xl" />
                 <span>Orders</span>
             </Link>
-            <Link to="/suggestions" className="flex items-center hover:text-gray-300">
-                <FaLightbulb className="text-xl mr-1" />
+            <Link
+                to="/suggestions"
+                className="flex items-center space-x-1 focus:outline-none focus:ring-2 focus:ring-blue-600 rounded px-2 py-1"
+                aria-label="Suggestions"
+            >
+                <FaLightbulb className="text-xl" />
                 <span>Suggest</span>
             </Link>
 
             {/* Auth */}
-            {user ? (
-                <button onClick={logout} className="flex items-center hover:text-gray-300">
-                    <FaSignOutAlt className="text-xl mr-1" />
+            {currentUser ? (
+                <button
+                    onClick={logout}
+                    className="flex items-center space-x-1 focus:outline-none focus:ring-2 focus:ring-blue-600 rounded px-2 py-1"
+                    aria-label="Logout"
+                >
+                    <FaSignOutAlt className="text-xl" />
                     <span>Logout</span>
                 </button>
             ) : (
-                <button onClick={login} className="flex items-center hover:text-gray-300">
-                    <FaGoogle className="text-xl mr-1" />
+                <button
+                    onClick={login}
+                    className="flex items-center space-x-1 focus:outline-none focus:ring-2 focus:ring-blue-600 rounded px-2 py-1"
+                    aria-label="Login with Google"
+                >
+                    <FaGoogle className="text-xl" />
                     <span>Login</span>
                 </button>
             )}

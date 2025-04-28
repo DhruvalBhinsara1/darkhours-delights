@@ -1,56 +1,51 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import { useGoogleLogin } from "@react-oauth/google";
-import axios from "axios";
+import { auth, googleProvider } from "../firebase";
+import { onAuthStateChanged, signInWithPopup, signOut } from "firebase/auth";
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-    const [user, setUser] = useState(null);
+    const [currentUser, setCurrentUser] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-    const login = useGoogleLogin({
-        onSuccess: async (tokenResponse) => {
-            try {
-                const res = await axios.get("https://www.googleapis.com/oauth2/v3/userinfo", {
-                    headers: {
-                        Authorization: `Bearer ${tokenResponse.access_token}`,
-                    },
-                });
-                setUser(res.data); // Store user info (e.g., email, name)
-                console.log("User logged in:", res.data);
-            } catch (error) {
-                console.error("Login failed:", error);
-            }
-        },
-        onError: (error) => console.error("Login error:", error),
-        flow: "implicit", // Use implicit flow for frontend
-    });
+    const login = async () => {
+        try {
+            const result = await signInWithPopup(auth, googleProvider);
+            alert("Successfully signed in with Google!");
+            return result.user;
+        } catch (error) {
+            console.error("Error signing in with Google:", error);
+            alert("Failed to sign in: " + error.message);
+            throw error;
+        }
+    };
 
-    const logout = () => {
-        setUser(null); // Clear user state on logout
+    const logout = async () => {
+        try {
+            await signOut(auth);
+            alert("Successfully signed out!");
+        } catch (error) {
+            console.error("Error signing out:", error);
+            alert("Failed to sign out: " + error.message);
+        }
     };
 
     useEffect(() => {
-        // Optionally, check if user is already logged in (e.g., from localStorage)
-        const savedUser = localStorage.getItem("user");
-        if (savedUser) {
-            setUser(JSON.parse(savedUser));
-        }
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            console.log("Auth State Changed - User:", user);
+            setCurrentUser(user);
+            setLoading(false);
+        });
+        return unsubscribe;
     }, []);
 
-    useEffect(() => {
-        // Persist user to localStorage
-        if (user) {
-            localStorage.setItem("user", JSON.stringify(user));
-        } else {
-            localStorage.removeItem("user");
-        }
-    }, [user]);
-
     return (
-        <AuthContext.Provider value={{ user, login, logout }}>
+        <AuthContext.Provider value={{ currentUser, login, logout, loading }}>
             {children}
         </AuthContext.Provider>
     );
 }
 
-export const useAuth = () => useContext(AuthContext);
+export function useAuth() {
+    return useContext(AuthContext);
+}
