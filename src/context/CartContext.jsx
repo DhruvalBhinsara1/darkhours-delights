@@ -1,43 +1,36 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useState, useContext } from "react";
 
-const CartContext = createContext();
+export const CartContext = createContext();
 
-export const CartProvider = ({ children }) => {
+export function CartProvider({ children }) {
     const [cart, setCart] = useState([]);
 
-    const addToCart = (item, quantity) => {
-        setCart((prevCart) => {
-            const existingItem = prevCart.find((cartItem) => cartItem._id === item._id);
-            if (existingItem) {
-                return prevCart.map((cartItem) =>
-                    cartItem._id === item._id
-                        ? { ...cartItem, quantity: cartItem.quantity + quantity }
-                        : cartItem
+    const addToCart = (item) => {
+        console.log("Adding to cart:", item); // Debug
+        setCart((prev) => {
+            const existing = prev.find((i) => i._id === item._id);
+            if (existing) {
+                return prev.map((i) =>
+                    i._id === item._id ? { ...i, quantity: i.quantity + 1 } : i
                 );
             }
-            return [...prevCart, { ...item, quantity }];
+            return [...prev, { ...item, quantity: 1 }];
         });
-    };
-
-    const updateQuantity = (itemId, quantity) => {
-        if (quantity < 1) {
-            setCart((prevCart) => prevCart.filter((item) => item._id !== itemId));
-        } else {
-            setCart((prevCart) =>
-                prevCart.map((item) =>
-                    item._id === itemId ? { ...item, quantity } : item
-                )
-            );
-        }
     };
 
     const clearCart = () => setCart([]);
 
     return (
-        <CartContext.Provider value={{ cart, addToCart, updateQuantity, clearCart }}>
+        <CartContext.Provider value={{ cart, addToCart, clearCart }}>
             {children}
         </CartContext.Provider>
     );
-};
+}
 
-export const useCart = () => useContext(CartContext);
+export function useCart() {
+    const context = useContext(CartContext);
+    if (!context) {
+        throw new Error("useCart must be used within a CartProvider");
+    }
+    return context;
+}

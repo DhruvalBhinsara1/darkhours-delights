@@ -25,3 +25,6 @@ dist-ssr
 
 # .gitignore
 .env
+
+
+echo "firebase-service-account.json" >> .gitignore

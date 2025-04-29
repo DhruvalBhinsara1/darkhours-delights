@@ -3,6 +3,7 @@ import { useCart } from "../context/CartContext";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useShopStatus } from "../context/ShopStatusContext";
+import axios from "axios";
 
 function Checkout() {
     const { currentUser, loading: authLoading } = useAuth();
@@ -39,28 +40,20 @@ function Checkout() {
     };
 
     const validateForm = () => {
-        // Validate phone number (10 digits)
         if (!deliveryInfo.phone || !/^\d{10}$/.test(deliveryInfo.phone)) {
             return "Please enter a valid 10-digit phone number.";
         }
-
-        // Validate room number (non-empty)
         if (!deliveryInfo.room) {
             return "Please enter your room number.";
         }
-
-        // Validate block (only A, B, or C, case-insensitive)
         const blockUpper = deliveryInfo.block.toUpperCase();
         if (!["A", "B", "C"].includes(blockUpper)) {
             return "Block must be A, B, or C.";
         }
-
-        // Validate floor (must be a number between 0 and 4)
         const floorNum = parseInt(deliveryInfo.floor, 10);
         if (!deliveryInfo.floor || isNaN(floorNum) || floorNum < 0 || floorNum > 4) {
             return "Floor must be a number between 0 (Ground Floor) and 4.";
         }
-
         return null;
     };
 
@@ -89,13 +82,17 @@ function Checkout() {
         try {
             const orderId = `ORD${Date.now()}`;
             const timestamp = Date.now();
+            const token = await currentUser.getIdToken();
 
             const order = {
                 orderId,
+                userId: currentUser.uid,
                 timestamp,
                 total: totalPrice,
                 items: cart.map((item) => ({
-                    ...item,
+                    _id: item._id,
+                    title: item.title, // Changed from name to title
+                    price: item.price,
                     quantity: item.quantity || 1,
                 })),
                 phone: deliveryInfo.phone,
@@ -104,18 +101,19 @@ function Checkout() {
                 floor: parseInt(deliveryInfo.floor, 10),
             };
 
-            const storedOrders = localStorage.getItem(`orders_${currentUser.uid}`);
-            const existingOrders = storedOrders ? JSON.parse(storedOrders) : [];
-            const updatedOrders = [...existingOrders, order];
+            console.log("Cart Contents:", cart); // Debug
+            console.log("Order Data:", order); // Debug
 
-            localStorage.setItem(`orders_${currentUser.uid}`, JSON.stringify(updatedOrders));
+            await axios.post("http://localhost:5005/api/orders", order, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
 
             alert("Checkout successful! Thank you for your order.");
             clearCart();
             navigate("/order-confirmation");
         } catch (error) {
             console.error("Error during checkout:", error);
-            alert("Failed to process your order. Please try again.");
+            alert(error.response?.data?.error || "Failed to process your order. Please try again.");
         } finally {
             setIsProcessing(false);
         }
@@ -252,16 +250,15 @@ function Checkout() {
                     <button
                         onClick={handleCheckout}
                         disabled={isProcessing || shopStatus === "closed"}
-                        className={`mt-4 w-full px-4 py-2 bg-blue-500 text-white rounded transition-colors duration-200 ${isProcessing || shopStatus === "closed"
-                                ? "opacity-50 cursor-not-allowed"
-                                : "hover:bg-blue-600"
-                            }`}
+                        className={`mt-4 w-full px-4 py-2 bg-blue-500 text-white rounded transition-colors duration-200 ${
+                            isProcessing || shopStatus === "closed" ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-600"
+                        }`}
                     >
                         {shopStatus === "closed"
                             ? "Shop Closed"
                             : isProcessing
-                                ? "Processing..."
-                                : "Confirm Order"}
+                            ? "Processing..."
+                            : "Confirm Order"}
                     </button>
                     {shopStatus === "closed" && (
                         <p className="text-red-400 text-sm mt-2 text-center">

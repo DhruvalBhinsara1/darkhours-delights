@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Link } from "react-router-dom";
+import axios from "axios";
 
 function OrderHistory() {
   const { currentUser, loading } = useAuth();
@@ -13,25 +14,19 @@ function OrderHistory() {
   useEffect(() => {
     if (loading || !currentUser) return;
 
-    try {
-      const storedOrders = localStorage.getItem(`orders_${currentUser.uid}`);
-      if (storedOrders) {
-        const parsedOrders = JSON.parse(storedOrders);
-        if (Array.isArray(parsedOrders)) {
-          setOrders(parsedOrders);
-        } else {
-          setOrders([]);
-          setError("Invalid order data in storage.");
+    const fetchOrders = async () => {
+        try {
+            const response = await axios.get(`http://localhost:5005/api/orders/${currentUser.uid}`);
+            setOrders(response.data);
+        } catch (e) {
+            console.error("Error fetching orders:", e);
+            setError("Failed to load order history.");
+            setOrders([]);
         }
-      } else {
-        setOrders([]);
-      }
-    } catch (e) {
-      console.error("Error parsing orders from localStorage:", e);
-      setError("Failed to load order history.");
-      setOrders([]);
-    }
-  }, [currentUser, loading]);
+    };
+
+    fetchOrders();
+}, [currentUser, loading]);
 
   if (loading) {
     return (

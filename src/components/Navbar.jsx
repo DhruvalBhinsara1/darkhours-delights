@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Link } from "react-router-dom";
-import { FaShoppingCart, FaLightbulb, FaGoogle, FaSignOutAlt, FaHistory, FaHome, FaStore } from "react-icons/fa";
-import { useShopStatus } from "../context/ShopStatusContext"; // Updated import
+import { FaShoppingCart, FaLightbulb, FaGoogle, FaSignOutAlt, FaHistory, FaHome, FaStore, FaUserShield } from "react-icons/fa";
+import { useShopStatus } from "../context/ShopStatusContext";
 
 function Navbar() {
     const { currentUser, login, logout } = useAuth();
     const [menuOpen, setMenuOpen] = useState(false);
-    const { shopStatus, loading } = useShopStatus(); // Use context hook
+    const { shopStatus, loading } = useShopStatus();
 
     const toggleMenu = () => {
         setMenuOpen((prev) => !prev);
@@ -48,8 +48,7 @@ function Navbar() {
 
             {/* Mobile Menu with Transition */}
             <div
-                className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${menuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-                    }`}
+                className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${menuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}`}
             >
                 <div className="flex flex-col items-start bg-gray-800 p-4 space-y-4 frosted-glass">
                     <ShopLinks
@@ -77,8 +76,7 @@ function ShopLinks({ shopOpen, loading, currentUser, login, logout }) {
                     </span>
                 ) : (
                     <span
-                        className={`text-xs font-semibold px-2 py-1 rounded-full ${shopOpen ? "bg-green-500 animate-pulse" : "bg-red-500"
-                            }`}
+                        className={`text-xs font-semibold px-2 py-1 rounded-full ${shopOpen ? "bg-green-500 animate-pulse" : "bg-red-500"}`}
                     >
                         {shopOpen ? "Open" : "Closed"}
                     </span>
@@ -118,6 +116,16 @@ function ShopLinks({ shopOpen, loading, currentUser, login, logout }) {
                 <FaLightbulb className="text-xl" />
                 <span>Suggest</span>
             </Link>
+            {currentUser && (
+                <Link
+                    to="/admin"
+                    className="flex items-center space-x-1 focus:outline-none focus:ring-2 focus:ring-blue-600 rounded px-2 py-1"
+                    aria-label="Admin Panel"
+                >
+                    <FaUserShield className="text-xl" />
+                    <span>Admin</span>
+                </Link>
+            )}
 
             {/* Auth */}
             {currentUser ? (

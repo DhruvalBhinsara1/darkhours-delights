@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Link } from "react-router-dom";
+import axios from "axios";
 
 function OrderConfirmation() {
     const { currentUser, loading } = useAuth();
@@ -10,22 +11,22 @@ function OrderConfirmation() {
     useEffect(() => {
         if (loading || !currentUser) return;
 
-        try {
-            const storedOrders = localStorage.getItem(`orders_${currentUser.uid}`);
-            if (storedOrders) {
-                const parsedOrders = JSON.parse(storedOrders);
-                if (Array.isArray(parsedOrders) && parsedOrders.length > 0) {
-                    setLatestOrder(parsedOrders[parsedOrders.length - 1]);
+        const fetchLatestOrder = async () => {
+            try {
+                const response = await axios.get(`http://localhost:5005/api/orders/${currentUser.uid}`);
+                const orders = response.data;
+                if (Array.isArray(orders) && orders.length > 0) {
+                    setLatestOrder(orders[0]); // Latest order (sorted by timestamp descending)
                 } else {
                     setError("No orders found.");
                 }
-            } else {
-                setError("No orders found.");
+            } catch (e) {
+                console.error("Error fetching latest order:", e);
+                setError("Failed to load order confirmation.");
             }
-        } catch (e) {
-            console.error("Error parsing orders from localStorage:", e);
-            setError("Failed to load order confirmation.");
-        }
+        };
+
+        fetchLatestOrder();
     }, [currentUser, loading]);
 
     if (loading) {
