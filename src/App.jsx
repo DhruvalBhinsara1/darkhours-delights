@@ -13,6 +13,8 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext"; // Note: Your query uses CartContext, not CartProvider
 import { ShopStatusProvider } from "./context/ShopStatusContext";
 import { useEffect, useState } from "react";
+import { ThemeProvider } from "./context/ThemeContext";
+import "./styles/themes.css";
 
 function ProtectedRoute({ children, requireAdmin = false }) {
   const { currentUser, loading } = useAuth();
@@ -42,8 +44,8 @@ function ProtectedRoute({ children, requireAdmin = false }) {
   // Show loading screen while checking authentication or admin status
   if (loading || adminCheckLoading) {
     return (
-      <div className="bg-gray-900 text-gray-200 min-h-screen flex items-center justify-center">
-        <p className="text-gray-400">Checking authentication...</p>
+      <div className="min-h-screen flex items-center justify-center bg-primary text-primary">
+        <p>Checking authentication...</p>
       </div>
     );
   }
@@ -68,59 +70,61 @@ function ProtectedRoute({ children, requireAdmin = false }) {
 
 function App() {
   return (
-    <AuthProvider>
-      <ShopStatusProvider>
-        <CartProvider>
-          <BrowserRouter>
-            <div className="min-h-screen flex flex-col">
-              <Navbar />
-              <main className="flex-grow">
-                <ErrorBoundary>
-                  <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/cart" element={<Cart />} />
-                    <Route
-                      path="/checkout"
-                      element={
-                        <ProtectedRoute>
-                          <Checkout />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/order-confirmation"
-                      element={
-                        <ProtectedRoute>
-                          <OrderConfirmation />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/order-history"
-                      element={
-                        <ProtectedRoute>
-                          <OrderHistory />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route path="/suggestions" element={<Suggestions />} />
-                    <Route
-                      path="/admin"
-                      element={
-                        <ProtectedRoute requireAdmin={true}>
-                          <AdminPanel />
-                        </ProtectedRoute>
-                      }
-                    />
-                  </Routes>
-                </ErrorBoundary>
-              </main>
-              <Footer />
-            </div>
-          </BrowserRouter>
-        </CartProvider>
-      </ShopStatusProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <ShopStatusProvider>
+          <CartProvider>
+            <BrowserRouter>
+              <div className="min-h-screen flex flex-col bg-primary text-primary">
+                <Navbar />
+                <main className="flex-grow bg-primary text-primary">
+                  <ErrorBoundary>
+                    <Routes>
+                      <Route path="/" element={<Home />} />
+                      <Route path="/cart" element={<Cart />} />
+                      <Route
+                        path="/checkout"
+                        element={
+                          <ProtectedRoute>
+                            <Checkout />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/order-confirmation/:orderId"
+                        element={
+                          <ProtectedRoute>
+                            <OrderConfirmation />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/order-history"
+                        element={
+                          <ProtectedRoute>
+                            <OrderHistory />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route path="/suggestions" element={<Suggestions />} />
+                      <Route
+                        path="/admin"
+                        element={
+                          <ProtectedRoute requireAdmin={true}>
+                            <AdminPanel />
+                          </ProtectedRoute>
+                        }
+                      />
+                    </Routes>
+                  </ErrorBoundary>
+                </main>
+                <Footer />
+              </div>
+            </BrowserRouter>
+          </CartProvider>
+        </ShopStatusProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

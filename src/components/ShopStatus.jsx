@@ -1,29 +1,38 @@
-import { useState, useEffect } from "react";
+// src/context/ShopStatusContext.jsx
+import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
 
-function ShopStatus() {
-    const [isOpen, setIsOpen] = useState(false);
+const ShopStatusContext = createContext();
 
-    useEffect(() => {
-        // Mock shop status for now
-        setIsOpen(false);
-        // Uncomment when backend is ready
-        /*
-        axios
-          .get("/api/shop/status")
-          .then((res) => setIsOpen(res.data.isOpen))
-          .catch((err) => console.error("Failed to fetch shop status:", err));
-        */
-    }, []);
+export function ShopStatusProvider({ children }) {
+  const [shopStatus, setShopStatus] = useState("open");
+  const [loading, setLoading] = useState(true);
 
-    return (
-        <div
-            className={`text-sm ${isOpen ? "text-green-400" : "text-red-400"
-                } mb-2 md:mb-0`}
-        >
-            Shop is {isOpen ? "Open" : "Closed"}
-        </div>
-    );
+  const refreshShopStatus = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get("https://web-production-6e9b1.up.railway.app/api/shopStatus");
+      setShopStatus(response.data.status);
+      console.log("Shop status refreshed from API:", response.data.status);
+    } catch (error) {
+      console.error("Error fetching shop status:", error);
+      setShopStatus("closed"); // Default to closed on error
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    refreshShopStatus();
+    const interval = setInterval(refreshShopStatus, 60000); // Update every minute
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <ShopStatusContext.Provider value={{ shopStatus, loading, refreshShopStatus }}>
+      {children}
+    </ShopStatusContext.Provider>
+  );
 }
 
-export default ShopStatus;
+export const useShopStatus = () => useContext(ShopStatusContext);

@@ -1,149 +1,103 @@
-import { useAuth } from "../context/AuthContext";
+import { useState, useEffect } from "react";
 import { useCart } from "../context/CartContext";
-import { Link, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext";
 import { useShopStatus } from "../context/ShopStatusContext";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 function Checkout() {
-    const { currentUser, loading: authLoading } = useAuth();
     const { cart, clearCart } = useCart();
+    const { currentUser } = useAuth();
+    const { isOpen } = useShopStatus();
     const navigate = useNavigate();
-    const [isProcessing, setIsProcessing] = useState(false);
-    const [deliveryInfo, setDeliveryInfo] = useState({
-        phone: "",
+    const [formData, setFormData] = useState({
         room: "",
         block: "",
         floor: "",
+        phone: "",
     });
-    const [formError, setFormError] = useState(null);
-    const { shopStatus, loading: statusLoading } = useShopStatus();
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
-        if (!authLoading && !statusLoading && (!currentUser || shopStatus === "closed")) {
-            if (!currentUser) {
-                alert("Please log in to continue with checkout.");
-                navigate("/");
-            } else if (shopStatus === "closed") {
-                alert("Sorry, the shop is currently closed. Please try again later.");
-                navigate("/");
-            }
+        if (!isOpen) {
+            setError("The shop is currently closed. Please try again later.");
         }
-    }, [authLoading, statusLoading, currentUser, shopStatus, navigate]);
+    }, [isOpen]);
 
-    const handleInputChange = (e) => {
+    const handleChange = (e) => {
         const { name, value } = e.target;
-        setDeliveryInfo((prev) => ({
+        setFormData((prev) => ({
             ...prev,
             [name]: value,
         }));
     };
 
-    const validateForm = () => {
-        if (!deliveryInfo.phone || !/^\d{10}$/.test(deliveryInfo.phone)) {
-            return "Please enter a valid 10-digit phone number.";
-        }
-        if (!deliveryInfo.room) {
-            return "Please enter your room number.";
-        }
-        const blockUpper = deliveryInfo.block.toUpperCase();
-        if (!["A", "B", "C"].includes(blockUpper)) {
-            return "Block must be A, B, or C.";
-        }
-        const floorNum = parseInt(deliveryInfo.floor, 10);
-        if (!deliveryInfo.floor || isNaN(floorNum) || floorNum < 0 || floorNum > 4) {
-            return "Floor must be a number between 0 (Ground Floor) and 4.";
-        }
-        return null;
-    };
-
-    const handleCheckout = async () => {
-        if (!currentUser || shopStatus === "closed") {
-            alert("Cannot process order: Shop is closed or you need to log in.");
-            navigate("/");
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!isOpen) {
+            setError("The shop is currently closed. Please try again later.");
             return;
         }
 
-        const validationError = validateForm();
-        if (validationError) {
-            setFormError(validationError);
-            return;
-        }
-
-        const totalPrice = cart.reduce((total, item) => total + item.price * item.quantity, 0);
-        if (totalPrice < 30) {
-            setFormError("Minimum order value is ₹30. Please add more items to your cart.");
-            return;
-        }
-
-        setIsProcessing(true);
-        setFormError(null);
+        setLoading(true);
+        setError(null);
 
         try {
-            const orderId = `ORD${Date.now()}`;
-            const timestamp = Date.now();
             const token = await currentUser.getIdToken();
-
-            const order = {
-                orderId,
+            const orderData = {
+                orderId: `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
                 userId: currentUser.uid,
-                timestamp,
-                total: totalPrice,
-                items: cart.map((item) => ({
+                timestamp: new Date().toISOString(),
+                total: cart.reduce((total, item) => total + item.price * item.quantity, 0),
+                items: cart.map(item => ({
                     _id: item._id,
-                    title: item.title, // Changed from name to title
+                    title: item.title,
                     price: item.price,
-                    quantity: item.quantity || 1,
+                    quantity: item.quantity
                 })),
-                phone: deliveryInfo.phone,
-                room: deliveryInfo.room,
-                block: deliveryInfo.block.toUpperCase(),
-                floor: parseInt(deliveryInfo.floor, 10),
+                phone: formData.phone,
+                room: formData.room,
+                block: formData.block,
+                floor: parseInt(formData.floor)
             };
 
-            console.log("Cart Contents:", cart); // Debug
-            console.log("Order Data:", order); // Debug
+            const response = await axios.post(
+                "https://web-production-6e9b1.up.railway.app/api/orders",
+                orderData,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
 
-            await axios.post("http://localhost:5005/api/orders", order, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-
-            alert("Checkout successful! Thank you for your order.");
             clearCart();
-            navigate("/order-confirmation");
-        } catch (error) {
-            console.error("Error during checkout:", error);
-            alert(error.response?.data?.error || "Failed to process your order. Please try again.");
+            navigate(`/order-confirmation/${response.data.order.orderId}`);
+        } catch (err) {
+            console.error("Error placing order:", err);
+            setError(
+                err.response?.data?.error ||
+                "Failed to place order. Please try again."
+            );
         } finally {
-            setIsProcessing(false);
+            setLoading(false);
         }
     };
 
-    if (authLoading || statusLoading) {
+    if (!currentUser) {
         return (
-            <div className="bg-gray-900 text-gray-200 min-h-screen flex items-center justify-center">
-                Loading...
-            </div>
-        );
-    }
-
-    if (!currentUser || shopStatus === "closed") {
-        return (
-            <div className="bg-gray-900 text-gray-200 min-h-screen flex items-center justify-center">
-                <div className="frosted-glass p-6 rounded-lg shadow-md text-center">
-                    <h2 className="text-2xl font-bold mb-4 text-white">
-                        {shopStatus === "closed" ? "Shop Closed" : "Please Log In"}
-                    </h2>
-                    <p className="mb-4 text-gray-400">
-                        {shopStatus === "closed"
-                            ? "Sorry, the shop is currently closed. Please try again later."
-                            : "You need to be logged in to checkout."}
+            <div className="min-h-screen flex items-center justify-center bg-primary text-primary">
+                <div className="text-center">
+                    <h1 className="text-3xl font-bold mb-4">Checkout</h1>
+                    <p className="text-secondary mb-6">
+                        Please sign in to complete your order.
                     </p>
                     <Link
-                        to={shopStatus === "closed" ? "/" : "/"}
-                        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors duration-200"
+                        to="/login"
+                        className="inline-block px-6 py-3 bg-button-primary text-button-text rounded-lg hover:bg-button-hover transition-all duration-300"
                     >
-                        {shopStatus === "closed" ? "Go to Home" : "Go to Login"}
+                        Sign In
                     </Link>
                 </div>
             </div>
@@ -152,12 +106,15 @@ function Checkout() {
 
     if (cart.length === 0) {
         return (
-            <div className="bg-gray-900 text-gray-200 min-h-screen flex items-center justify-center">
-                <div className="frosted-glass p-6 rounded-lg shadow-md text-center">
-                    <h2 className="text-2xl font-bold mb-4 text-white">Your Cart is Empty</h2>
+            <div className="min-h-screen flex items-center justify-center bg-primary text-primary">
+                <div className="text-center">
+                    <h1 className="text-3xl font-bold mb-4">Checkout</h1>
+                    <p className="text-secondary mb-6">
+                        Your cart is empty. Please add some items before checking out.
+                    </p>
                     <Link
                         to="/"
-                        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors duration-200"
+                        className="inline-block px-6 py-3 bg-button-primary text-button-text rounded-lg hover:bg-button-hover transition-all duration-300"
                     >
                         Continue Shopping
                     </Link>
@@ -166,105 +123,159 @@ function Checkout() {
         );
     }
 
-    const totalPrice = cart.reduce((total, item) => total + item.price * item.quantity, 0);
-
     return (
-        <div className="bg-gray-900 text-gray-200 min-h-screen">
-            <div className="container mx-auto p-4">
-                <h1 className="text-3xl font-bold mb-6 text-white">Checkout</h1>
-                <div className="frosted-glass p-6 rounded-lg shadow-md">
-                    <h2 className="text-xl font-semibold mb-4">Delivery Information</h2>
-                    {formError && <p className="text-red-400 mb-4">{formError}</p>}
-                    <form className="space-y-4">
-                        <div>
-                            <label htmlFor="phone" className="block text-gray-300 mb-1">
-                                Phone Number
-                            </label>
-                            <input
-                                type="text"
-                                id="phone"
-                                name="phone"
-                                value={deliveryInfo.phone}
-                                onChange={handleInputChange}
-                                className="w-full p-2 rounded bg-gray-800 text-gray-200 border border-gray-700 focus:outline-none focus:border-blue-500"
-                                placeholder="Enter your 10-digit phone number"
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="room" className="block text-gray-300 mb-1">
-                                Room Number
-                            </label>
-                            <input
-                                type="text"
-                                id="room"
-                                name="room"
-                                value={deliveryInfo.room}
-                                onChange={handleInputChange}
-                                className="w-full p-2 rounded bg-gray-800 text-gray-200 border border-gray-700 focus:outline-none focus:border-blue-500"
-                                placeholder="Enter your room number (e.g., 101)"
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="block" className="block text-gray-300 mb-1">
-                                Block
-                            </label>
-                            <input
-                                type="text"
-                                id="block"
-                                name="block"
-                                value={deliveryInfo.block}
-                                onChange={handleInputChange}
-                                className="w-full p-2 rounded bg-gray-800 text-gray-200 border border-gray-700 focus:outline-none focus:border-blue-500"
-                                placeholder="Enter your block (A, B, or C)"
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="floor" className="block text-gray-300 mb-1">
-                                Floor
-                            </label>
-                            <input
-                                type="text"
-                                id="floor"
-                                name="floor"
-                                value={deliveryInfo.floor}
-                                onChange={handleInputChange}
-                                className="w-full p-2 rounded bg-gray-800 text-gray-200 border border-gray-700 focus:outline-none focus:border-blue-500"
-                                placeholder="Enter your floor (0 for Ground, 1-4)"
-                            />
-                        </div>
-                    </form>
-
-                    <h2 className="text-xl font-semibold mt-6 mb-4">Order Summary</h2>
-                    <ul className="mb-4">
-                        {cart.map((item) => (
-                            <li key={item._id} className="flex justify-between py-2">
-                                <span>{item.title} (x{item.quantity})</span>
-                                <span>₹{item.price * item.quantity}</span>
-                            </li>
-                        ))}
-                    </ul>
-                    <div className="flex justify-between font-bold text-lg">
-                        <span>Total:</span>
-                        <span>₹{totalPrice}</span>
+        <div className="min-h-screen bg-primary text-primary">
+            <div className="container mx-auto p-4 sm:p-6">
+                <h1 className="text-3xl font-bold mb-8">Checkout</h1>
+                {error && (
+                    <div className="mb-6 p-4 rounded-lg bg-error-bg text-error-text">
+                        {error}
                     </div>
-                    <button
-                        onClick={handleCheckout}
-                        disabled={isProcessing || shopStatus === "closed"}
-                        className={`mt-4 w-full px-4 py-2 bg-blue-500 text-white rounded transition-colors duration-200 ${
-                            isProcessing || shopStatus === "closed" ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-600"
-                        }`}
-                    >
-                        {shopStatus === "closed"
-                            ? "Shop Closed"
-                            : isProcessing
-                            ? "Processing..."
-                            : "Confirm Order"}
-                    </button>
-                    {shopStatus === "closed" && (
-                        <p className="text-red-400 text-sm mt-2 text-center">
-                            The shop is currently closed. Please try again later.
-                        </p>
-                    )}
+                )}
+                <div className="grid gap-8 md:grid-cols-2">
+                    <div className="card p-6 rounded-xl border border-border-color">
+                        <h2 className="text-2xl font-semibold mb-6">Order Summary</h2>
+                        <div className="space-y-4">
+                            {cart.map((item) => (
+                                <div
+                                    key={item._id}
+                                    className="flex justify-between items-center"
+                                >
+                                    <div>
+                                        <p className="text-primary font-medium">
+                                            {item.title}
+                                        </p>
+                                        <p className="text-secondary text-sm">
+                                            Quantity: {item.quantity}
+                                        </p>
+                                    </div>
+                                    <p className="text-primary font-medium">
+                                        ₹{item.price * item.quantity}
+                                    </p>
+                                </div>
+                            ))}
+                            <div className="border-t border-border-color pt-4">
+                                <div className="flex justify-between items-center">
+                                    <p className="text-lg font-bold text-primary">Total</p>
+                                    <p className="text-lg font-bold text-primary">
+                                        ₹{cart.reduce((total, item) => total + item.price * item.quantity, 0)}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="card p-6 rounded-xl border border-border-color">
+                        <h2 className="text-2xl font-semibold mb-6">
+                            Delivery Information
+                        </h2>
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div>
+                                <label
+                                    htmlFor="room"
+                                    className="block text-sm font-medium text-primary mb-1"
+                                >
+                                    Room Number
+                                </label>
+                                <input
+                                    type="text"
+                                    id="room"
+                                    name="room"
+                                    value={formData.room}
+                                    onChange={handleChange}
+                                    required
+                                    className="input w-full"
+                                    placeholder="Enter your room number"
+                                />
+                            </div>
+                            <div>
+                                <label
+                                    htmlFor="block"
+                                    className="block text-sm font-medium text-primary mb-1"
+                                >
+                                    Block
+                                </label>
+                                <input
+                                    type="text"
+                                    id="block"
+                                    name="block"
+                                    value={formData.block}
+                                    onChange={handleChange}
+                                    required
+                                    className="input w-full"
+                                    placeholder="Enter your block"
+                                />
+                            </div>
+                            <div>
+                                <label
+                                    htmlFor="floor"
+                                    className="block text-sm font-medium text-primary mb-1"
+                                >
+                                    Floor
+                                </label>
+                                <input
+                                    type="text"
+                                    id="floor"
+                                    name="floor"
+                                    value={formData.floor}
+                                    onChange={handleChange}
+                                    required
+                                    className="input w-full"
+                                    placeholder="Enter your floor"
+                                />
+                            </div>
+                            <div>
+                                <label
+                                    htmlFor="phone"
+                                    className="block text-sm font-medium text-primary mb-1"
+                                >
+                                    Phone Number
+                                </label>
+                                <input
+                                    type="tel"
+                                    id="phone"
+                                    name="phone"
+                                    value={formData.phone}
+                                    onChange={handleChange}
+                                    required
+                                    className="input w-full"
+                                    placeholder="Enter your phone number"
+                                />
+                            </div>
+                            <button
+                                type="submit"
+                                disabled={loading || !isOpen}
+                                className="w-full py-3 bg-button-primary text-button-text rounded-lg hover:bg-button-hover transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {loading ? (
+                                    <div className="flex items-center justify-center">
+                                        <svg
+                                            className="animate-spin h-5 w-5 mr-2"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <circle
+                                                className="opacity-25"
+                                                cx="12"
+                                                cy="12"
+                                                r="10"
+                                                stroke="currentColor"
+                                                strokeWidth="4"
+                                            ></circle>
+                                            <path
+                                                className="opacity-75"
+                                                fill="currentColor"
+                                                d="M4 12a8 8 0 018-8v8H4z"
+                                            ></path>
+                                        </svg>
+                                        Processing...
+                                    </div>
+                                ) : (
+                                    "Place Order"
+                                )}
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
