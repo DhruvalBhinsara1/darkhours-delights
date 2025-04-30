@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
+import { getApiUrl } from '../config/api';
 
 function OrderConfirmation() {
   const { currentUser, loading } = useAuth();
@@ -15,7 +16,7 @@ function OrderConfirmation() {
     const fetchOrder = async () => {
       try {
         const token = await currentUser.getIdToken();
-        const response = await axios.get(`https://web-production-6e9b1.up.railway.app/api/orders/${orderId}`, {
+        const response = await axios.get(getApiUrl(`api/orders/${orderId}`), {
           headers: { Authorization: `Bearer ${token}` },
         });
         setOrder(response.data);

@@ -1,6 +1,7 @@
 // src/context/ShopStatusContext.jsx
 import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
+import { getApiUrl } from '../config/api';
 
 const ShopStatusContext = createContext();
 
@@ -11,7 +12,7 @@ export function ShopStatusProvider({ children }) {
   const refreshShopStatus = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("https://web-production-6e9b1.up.railway.app/api/shopStatus");
+      const response = await axios.get(getApiUrl("api/shopStatus"));
       setShopStatus(response.data.status);
       console.log("Shop status refreshed from API:", response.data.status);
     } catch (error) {

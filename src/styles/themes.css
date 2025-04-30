@@ -11,6 +11,7 @@
   --border-color: #dee2e6;
   --shadow-color: rgba(0, 0, 0, 0.15);
   --nav-shadow: rgba(0, 0, 0, 0.1);
+  --glow-color: rgba(13, 110, 253, 0.4);
   --success-bg: #d1e7dd;
   --success-text: #0f5132;
   --error-bg: #f8d7da;
@@ -43,6 +44,7 @@
   --border-color: #333333;
   --shadow-color: rgba(0, 0, 0, 0.4);
   --nav-shadow: rgba(0, 0, 0, 0.25);
+  --glow-color: rgba(59, 130, 246, 0.4);
   --success-bg: rgba(16, 185, 129, 0.1);
   --success-text: #10b981;
   --error-bg: rgba(239, 68, 68, 0.1);
@@ -72,18 +74,85 @@ body {
 /* Common components */
 .card {
   background-color: var(--card-bg);
-  border: 1px solid var(--border-color);
+  border: 2px solid var(--border-color);
   box-shadow: 0 8px 16px -4px var(--shadow-color), 0 2px 4px -2px var(--shadow-color);
   color: var(--text-primary);
-  transition: all 0.3s ease-in-out, transform 0.2s ease-in-out;
-  border-radius: 0.5rem;
+  transition: all 0.3s ease-in-out;
+  border-radius: 0.75rem;
   overflow: hidden;
   margin-bottom: 1rem;
+  position: relative;
+  --mouse-x: 50%;
+  --mouse-y: 50%;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y),
+      var(--accent-primary),
+      transparent 40%);
+  border-radius: 0.75rem;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+  pointer-events: none;
 }
 
 .card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 20px -6px var(--shadow-color), 0 4px 8px -4px var(--shadow-color);
+  border-color: var(--accent-primary);
+  box-shadow: 0 12px 20px -6px var(--shadow-color),
+    0 4px 8px -4px var(--shadow-color),
+    0 0 15px var(--accent-primary);
+}
+
+.card:hover::before {
+  opacity: 1;
+}
+
+.image-container {
+  width: 100%;
+  height: 12rem;
+  overflow: hidden;
+  border-radius: 0.75rem 0.75rem 0 0;
+}
+
+.card img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background-color: var(--bg-secondary);
+  padding: 0.5rem;
+}
+
+.card-content {
+  padding: 1rem;
+}
+
+/* Add animation for the border glow */
+@keyframes borderGlow {
+  0% {
+    box-shadow: 0 12px 20px -6px var(--shadow-color),
+      0 4px 8px -4px var(--shadow-color),
+      0 0 15px var(--accent-primary);
+  }
+
+  50% {
+    box-shadow: 0 12px 20px -6px var(--shadow-color),
+      0 4px 8px -4px var(--shadow-color),
+      0 0 20px var(--accent-primary);
+  }
+
+  100% {
+    box-shadow: 0 12px 20px -6px var(--shadow-color),
+      0 4px 8px -4px var(--shadow-color),
+      0 0 15px var(--accent-primary);
+  }
+}
+
+.card:hover {
+  animation: borderGlow 2s ease-in-out infinite;
 }
 
 .input {
@@ -186,4 +255,17 @@ footer {
   transition-property: background-color, color, border-color, box-shadow;
   transition-duration: 0.3s;
   transition-timing-function: ease-in-out;
+}
+
+/* Add this script tag to your index.html or main JavaScript file */
+@property --mouse-x {
+  syntax: '<percentage>';
+  initial-value: 50%;
+  inherits: false;
+}
+
+@property --mouse-y {
+  syntax: '<percentage>';
+  initial-value: 50%;
+  inherits: false;
 }

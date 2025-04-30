@@ -15,6 +15,7 @@ import { ShopStatusProvider } from "./context/ShopStatusContext";
 import { useEffect, useState } from "react";
 import { ThemeProvider } from "./context/ThemeContext";
 import "./styles/themes.css";
+import { initGlowEffect } from './utils/cursorGlow';
 
 function ProtectedRoute({ children, requireAdmin = false }) {
   const { currentUser, loading } = useAuth();
@@ -69,6 +70,10 @@ function ProtectedRoute({ children, requireAdmin = false }) {
 }
 
 function App() {
+  useEffect(() => {
+    initGlowEffect();
+  }, []);
+
   return (
     <ThemeProvider>
       <AuthProvider>

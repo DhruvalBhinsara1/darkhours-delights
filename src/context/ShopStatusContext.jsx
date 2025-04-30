@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
+import { getApiUrl, API_BASE_URL } from '../config/api';
 
 const ShopStatusContext = createContext();
 
@@ -10,7 +11,7 @@ export function ShopStatusProvider({ children }) {
 
   const refreshShopStatus = async () => {
     try {
-      const response = await axios.get("https://web-production-6e9b1.up.railway.app/api/shopStatus");
+      const response = await axios.get(getApiUrl("api/shopStatus"));
       setShopStatus(response.data.status);
       setLastUpdated(new Date());
       console.log("Shop status refreshed from API:", response.data.status);
@@ -32,7 +33,7 @@ export function ShopStatusProvider({ children }) {
     let pollingInterval = null;
 
     const startSSE = () => {
-      eventSource = new EventSource("https://web-production-6e9b1.up.railway.app/api/shopStatus/stream");
+      eventSource = new EventSource(getApiUrl("api/shopStatus/stream"));
       eventSource.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);

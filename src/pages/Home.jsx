@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useCart } from "../context/CartContext";
 import axios from "axios";
+import { getApiUrl } from '../config/api';
 
 function Home() {
     const [items, setItems] = useState([]);
@@ -17,7 +18,7 @@ function Home() {
     useEffect(() => {
         const fetchItems = async () => {
             try {
-                const response = await axios.get("https://web-production-6e9b1.up.railway.app/api/items");
+                const response = await axios.get(getApiUrl("api/items"));
                 console.log("Fetched items:", response.data);
                 setItems(response.data);
             } catch (e) {

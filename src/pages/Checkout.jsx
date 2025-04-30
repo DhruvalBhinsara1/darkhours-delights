@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { useShopStatus } from "../context/ShopStatusContext";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { getApiUrl } from '../config/api';
 
 function Checkout() {
     const { cart, clearCart } = useCart();
@@ -65,7 +66,7 @@ function Checkout() {
             console.log('Submitting order:', orderData);
 
             const response = await axios.post(
-                "https://web-production-6e9b1.up.railway.app/api/orders",
+                getApiUrl("api/orders"),
                 orderData,
                 {
                     headers: {

@@ -4,6 +4,7 @@ import { Navigate } from "react-router-dom";
 import axios from "axios";
 import { FaStore, FaPlus, FaMinus, FaSpinner, FaSearch, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import "../styles/admin.css";
+import { getApiUrl } from '../config/api';
 
 function AdminPanel() {
     const { currentUser, loading: authLoading } = useAuth();
@@ -52,18 +53,18 @@ function AdminPanel() {
             try {
                 const token = await currentUser.getIdToken();
                 console.log("Fetching data with token:", token.slice(0, 20) + "..."); // Debug
-                const [itemsRes, statusRes] = await Promise.all([
-                    axios.get("https://web-production-6e9b1.up.railway.app/api/items", {
+                const [itemsResponse, statusResponse] = await Promise.all([
+                    axios.get(getApiUrl("api/items"), {
                         headers: { Authorization: `Bearer ${token}` },
                     }),
-                    axios.get("https://web-production-6e9b1.up.railway.app/api/shopStatus", {
+                    axios.get(getApiUrl("api/shopStatus"), {
                         headers: { Authorization: `Bearer ${token}` },
                     }),
                 ]);
-                console.log("Fetched items:", itemsRes.data); // Debug
-                console.log("Fetched shop status:", statusRes.data); // Debug
-                setItems(itemsRes.data);
-                setShopStatus(statusRes.data.status);
+                console.log("Fetched items:", itemsResponse.data); // Debug
+                console.log("Fetched shop status:", statusResponse.data); // Debug
+                setItems(itemsResponse.data);
+                setShopStatus(statusResponse.data.status);
             } catch (e) {
                 console.error("Error fetching admin data:", e);
                 setError(e.response?.data?.error || "Failed to load admin panel data");
@@ -87,8 +88,8 @@ function AdminPanel() {
             const token = await currentUser.getIdToken();
             console.log("Toggling shop with token:", token.slice(0, 20) + "..."); // Debug
             const newStatus = shopStatus === "open" ? "closed" : "open";
-            const response = await axios.put(
-                "https://web-production-6e9b1.up.railway.app/api/shopStatus",
+            const response = await axios.post(
+                getApiUrl("api/shopStatus"),
                 { status: newStatus },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -115,7 +116,7 @@ function AdminPanel() {
         try {
             const token = await currentUser.getIdToken();
             const response = await axios.put(
-                `https://web-production-6e9b1.up.railway.app/api/items/${itemId}/stock`,
+                getApiUrl(`api/items/${itemId}/stock`),
                 { change: stockChange },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -149,7 +150,7 @@ function AdminPanel() {
         try {
             const token = await currentUser.getIdToken();
             const response = await axios.post(
-                "https://web-production-6e9b1.up.railway.app/api/items",
+                getApiUrl("api/items"),
                 {
                     ...newItem,
                     price: parseFloat(newItem.price),
@@ -175,9 +176,10 @@ function AdminPanel() {
         setError(null);
         try {
             const token = await currentUser.getIdToken();
-            const response = await axios.get(`https://web-production-6e9b1.up.railway.app/api/orders/phone/${phone}`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            const response = await axios.get(
+                getApiUrl(`api/orders/phone/${phone}`),
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
             console.log("Orders found:", response.data); // Debug log
             setOrders(response.data);
         } catch (e) {
@@ -193,9 +195,10 @@ function AdminPanel() {
         setError(null);
         try {
             const token = await currentUser.getIdToken();
-            const response = await axios.get(`https://web-production-6e9b1.up.railway.app/api/orders/all/${page}`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            const response = await axios.get(
+                getApiUrl(`api/orders/all/${page}`),
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
             setAllOrders(response.data.orders);
             setTotalPages(response.data.totalPages);
             setCurrentPage(page);

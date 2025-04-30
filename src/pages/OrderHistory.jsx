@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import { getApiUrl } from '../config/api';
 
 function OrderHistory() {
   const { currentUser } = useAuth();
@@ -15,7 +16,7 @@ function OrderHistory() {
     const fetchOrders = async () => {
       try {
         const token = await currentUser.getIdToken();
-        const response = await axios.get("https://web-production-6e9b1.up.railway.app/api/orders", {
+        const response = await axios.get(getApiUrl("api/orders"), {
           headers: { Authorization: `Bearer ${token}` },
         });
         setOrders(response.data);
