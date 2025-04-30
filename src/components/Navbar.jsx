@@ -19,7 +19,7 @@ function Navbar() {
     const isShopOpen = shopStatus === "open";
 
     return (
-        <nav className="bg-nav-bg text-nav-text p-4 shadow-md sticky top-0 z-50">
+        <nav className="bg-gradient-to-r from-nav-bg to-nav-bg/90 backdrop-blur-sm text-nav-text p-4 shadow-lg sticky top-0 z-50 border-b border-border-color">
             <div className="container mx-auto flex items-center relative">
                 {/* Logo */}
                 <Link to="/" className="text-2xl font-bold whitespace-nowrap text-nav-text flex-1">
