@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { useShopStatus } from "../context/ShopStatusContext";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { getApiUrl } from '../config/api';
+import { getApiUrl, API_BASE_URL } from '../config/api';
 
 function Checkout() {
     const { cart, clearCart } = useCart();
@@ -45,10 +45,17 @@ function Checkout() {
         setError(null);
 
         try {
+            if (!currentUser) {
+                throw new Error("You must be logged in to place an order");
+            }
+
             const token = await currentUser.getIdToken();
+            console.log("Got token:", token.slice(0, 20) + "..."); // Debug log
+
             const orderData = {
                 orderId: `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
                 userId: currentUser.uid,
+                userEmail: currentUser.email,
                 timestamp: new Date().toISOString(),
                 total: cart.reduce((total, item) => total + item.price * item.quantity, 0),
                 items: cart.map(item => ({
@@ -70,35 +77,29 @@ function Checkout() {
                 orderData,
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`,
+                        'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
-                    },
+                    }
                 }
             );
 
             console.log('Order response:', response.data);
 
-            // Check if response has the expected structure
             if (!response.data) {
                 throw new Error('No response data received from server');
             }
 
-            // If the response contains the order directly
-            const orderId = response.data.orderId || (response.data.order && response.data.order.orderId);
-
+            const orderId = response.data.orderId;
             if (!orderId) {
-                console.error('Unexpected response structure:', response.data);
                 throw new Error('Invalid order response from server');
             }
 
             clearCart();
-            console.log('Navigating to order confirmation:', orderId);
             navigate(`/order-confirmation/${orderId}`);
         } catch (err) {
             console.error("Error placing order:", err);
             console.error("Error details:", err.response?.data);
             console.error("Error status:", err.response?.status);
-            console.error("Error headers:", err.response?.headers);
 
             let errorMessage = "Failed to place order. Please try again.";
             if (err.response?.data?.error) {

@@ -39,6 +39,7 @@ function AdminPanel() {
             const adminStatus = !!idTokenResult.claims.admin;
             setIsAdmin(adminStatus);
             console.log("Admin status:", adminStatus, "Claims:", idTokenResult.claims); // Debug
+            console.log("User ID:", currentUser.uid); // Added debug log for user ID
             if (!adminStatus) {
                 console.log("User is not an admin, redirecting to /");
             }
@@ -237,8 +238,8 @@ function AdminPanel() {
                         <div className="flex items-center justify-between mb-4">
                             <h2 className="text-2xl font-semibold">Shop Status</h2>
                             <span className={`px-3 py-1 rounded-full text-sm font-medium ${shopStatus === "open"
-                                    ? "bg-green-500/20 text-green-400"
-                                    : "bg-red-500/20 text-red-400"
+                                ? "bg-green-500/20 text-green-400"
+                                : "bg-red-500/20 text-red-400"
                                 }`}>
                                 {shopStatus === "open" ? "Open" : "Closed"}
                             </span>
@@ -338,8 +339,8 @@ function AdminPanel() {
                                         <div className="flex items-start justify-between mb-4">
                                             <h3 className="text-xl font-semibold">{item.title}</h3>
                                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${item.isAvailable
-                                                    ? "bg-green-500/20 text-green-400"
-                                                    : "bg-red-500/20 text-red-400"
+                                                ? "bg-green-500/20 text-green-400"
+                                                : "bg-red-500/20 text-red-400"
                                                 }`}>
                                                 {item.isAvailable ? "Available" : "Out of Stock"}
                                             </span>

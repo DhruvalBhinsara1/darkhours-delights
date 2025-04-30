@@ -7,12 +7,7 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
-    proxy: {
-      '/api': {
-        target: 'http://web-production-fb3c.up.railway.app',
-        changeOrigin: true,
-        secure: false,
-      }
-    }
+    port: 5173,
+    host: true
   }
 })
