@@ -1,5 +1,5 @@
 // API Configuration
-export const API_BASE_URL = 'http://localhost:5005';
+export const API_BASE_URL = 'https://web-production-fb3c.up.railway.app';
 
 // API Endpoints
 export const ENDPOINTS = {
