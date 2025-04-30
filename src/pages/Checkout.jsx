@@ -62,24 +62,51 @@ function Checkout() {
                 floor: parseInt(formData.floor)
             };
 
+            console.log('Submitting order:', orderData);
+
             const response = await axios.post(
                 "https://web-production-6e9b1.up.railway.app/api/orders",
                 orderData,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json'
                     },
                 }
             );
 
+            console.log('Order response:', response.data);
+
+            // Check if response has the expected structure
+            if (!response.data) {
+                throw new Error('No response data received from server');
+            }
+
+            // If the response contains the order directly
+            const orderId = response.data.orderId || (response.data.order && response.data.order.orderId);
+
+            if (!orderId) {
+                console.error('Unexpected response structure:', response.data);
+                throw new Error('Invalid order response from server');
+            }
+
             clearCart();
-            navigate(`/order-confirmation/${response.data.order.orderId}`);
+            console.log('Navigating to order confirmation:', orderId);
+            navigate(`/order-confirmation/${orderId}`);
         } catch (err) {
             console.error("Error placing order:", err);
-            setError(
-                err.response?.data?.error ||
-                "Failed to place order. Please try again."
-            );
+            console.error("Error details:", err.response?.data);
+            console.error("Error status:", err.response?.status);
+            console.error("Error headers:", err.response?.headers);
+
+            let errorMessage = "Failed to place order. Please try again.";
+            if (err.response?.data?.error) {
+                errorMessage = err.response.data.error;
+            } else if (err.message) {
+                errorMessage = err.message;
+            }
+
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }
